@@ -1,2 +1,27 @@
 # ai4kitchen
-Take a picture of your favourity food or some ingredients you have at home, ai4kitchen will generate a recipe for you! 
+
+ai4kitchen converts images of dishes or pantry ingredients into fully fledged
+recipes by combining vision and language models.
+
+## Documentation
+
+- [Overview](docs/overview.md)
+- [Usage](docs/usage.md)
+- [Code Structure](docs/structure.md)
+
+## Getting Started
+
+Install dependencies and run the lightweight test suite:
+
+```bash
+python -m pip install -e .[dev]
+pytest
+```
+
+## Project Goals
+
+- Fine-tune a CLIP backbone with a recipe generation head using PyTorch
+  Lightning.
+- Provide clear documentation for usage, design decisions, and repository
+  layout.
+- Maintain lightweight continuous integration to keep the project healthy.

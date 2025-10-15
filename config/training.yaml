@@ -1,0 +1,12 @@
+# Default training configuration for ai4kitchen.
+trainer:
+  max_epochs: 5
+  accelerator: auto
+  devices: auto
+model:
+  encoder: clip
+  decoder: transformer
+  learning_rate: 1.0e-4
+data:
+  train_manifest: data/train_manifest.jsonl
+  val_manifest: data/val_manifest.jsonl
