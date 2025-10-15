@@ -1,4 +1,5 @@
 """Test configuration for ai4kitchen."""
+
 from __future__ import annotations
 
 import sys

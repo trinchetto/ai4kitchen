@@ -1,4 +1,5 @@
 """Dataset definitions and helpers for ai4kitchen."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -64,7 +65,9 @@ class IngredientRecipeDataset:
         image_path = self._extract_image_path(raw_example)
         ingredients = self._extract_ingredients(raw_example)
         recipe_text = self._extract_recipe_text(raw_example)
-        return IngredientExample(image_path=image_path, ingredients=ingredients, recipe_text=recipe_text)
+        return IngredientExample(
+            image_path=image_path, ingredients=ingredients, recipe_text=recipe_text
+        )
 
     @staticmethod
     def _extract_image_path(example: Any) -> str:
@@ -83,7 +86,9 @@ class IngredientRecipeDataset:
         if isinstance(raw_ingredients, str):
             stripped = raw_ingredients.strip()
             return [stripped] if stripped else []
-        if isinstance(raw_ingredients, Iterable) and not isinstance(raw_ingredients, (str, bytes)):
+        if isinstance(raw_ingredients, Iterable) and not isinstance(
+            raw_ingredients, (str, bytes)
+        ):
             return [str(item).strip() for item in raw_ingredients if str(item).strip()]
         return [str(raw_ingredients)]
 
@@ -96,8 +101,12 @@ class IngredientRecipeDataset:
             return ""
         if isinstance(raw_instructions, str):
             return raw_instructions.strip()
-        if isinstance(raw_instructions, Iterable) and not isinstance(raw_instructions, (str, bytes)):
-            parts = [str(item).strip() for item in raw_instructions if str(item).strip()]
+        if isinstance(raw_instructions, Iterable) and not isinstance(
+            raw_instructions, (str, bytes)
+        ):
+            parts = [
+                str(item).strip() for item in raw_instructions if str(item).strip()
+            ]
             if parts:
                 return "\n".join(parts)
         return str(raw_instructions)
