@@ -1,4 +1,5 @@
 """Entry point for launching ai4kitchen training."""
+
 from __future__ import annotations
 
 from pathlib import Path

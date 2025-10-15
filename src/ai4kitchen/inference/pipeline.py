@@ -1,13 +1,17 @@
 """Inference pipeline for generating recipes from images."""
+
 from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
 from typing import Any, Dict
 
-if importlib.util.find_spec("torch") is not None:  # pragma: no cover - runtime dependency
+if (
+    importlib.util.find_spec("torch") is not None
+):  # pragma: no cover - runtime dependency
     import torch
 else:  # pragma: no cover - fallback for environments without the dependency
+
     class torch:  # type: ignore[override]
         class nn:  # type: ignore[override]
             Module = object

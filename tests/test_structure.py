@@ -1,4 +1,5 @@
 """Smoke tests for the ai4kitchen project structure."""
+
 from __future__ import annotations
 
 from ai4kitchen.models.recipe_module import ClipRecipeModule

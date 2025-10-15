@@ -25,12 +25,16 @@ def fake_dataset() -> list[dict[str, Any]]:
     ]
 
 
-def test_dataset_len(monkeypatch: pytest.MonkeyPatch, fake_dataset: list[dict[str, Any]]) -> None:
+def test_dataset_len(
+    monkeypatch: pytest.MonkeyPatch, fake_dataset: list[dict[str, Any]]
+) -> None:
     """Verify that ``__len__`` proxies the size of the underlying Hugging Face dataset."""
 
     captured_kwargs: dict[str, Any] = {}
 
-    def fake_load_dataset(name: str, split: str, cache_dir: str | None) -> list[dict[str, Any]]:
+    def fake_load_dataset(
+        name: str, split: str, cache_dir: str | None
+    ) -> list[dict[str, Any]]:
         captured_kwargs["name"] = name
         captured_kwargs["split"] = split
         captured_kwargs["cache_dir"] = cache_dir
@@ -41,13 +45,21 @@ def test_dataset_len(monkeypatch: pytest.MonkeyPatch, fake_dataset: list[dict[st
     dataset = IngredientRecipeDataset(split="train[:2]")
 
     assert len(dataset) == len(fake_dataset)
-    assert captured_kwargs == {"name": "kaggle_food_recipes", "split": "train[:2]", "cache_dir": None}
+    assert captured_kwargs == {
+        "name": "kaggle_food_recipes",
+        "split": "train[:2]",
+        "cache_dir": None,
+    }
 
 
-def test_dataset_getitem(monkeypatch: pytest.MonkeyPatch, fake_dataset: list[dict[str, Any]]) -> None:
+def test_dataset_getitem(
+    monkeypatch: pytest.MonkeyPatch, fake_dataset: list[dict[str, Any]]
+) -> None:
     """Ensure ``__getitem__`` returns an ``IngredientExample`` with normalized fields."""
 
-    monkeypatch.setattr("ai4kitchen.data.dataset.load_dataset", lambda *args, **kwargs: fake_dataset)
+    monkeypatch.setattr(
+        "ai4kitchen.data.dataset.load_dataset", lambda *args, **kwargs: fake_dataset
+    )
 
     dataset = IngredientRecipeDataset(split="train[:2]")
     example = dataset[0]
@@ -61,21 +73,27 @@ def test_dataset_getitem(monkeypatch: pytest.MonkeyPatch, fake_dataset: list[dic
 def test_extract_image_path_direct_call() -> None:
     """Ensure `_extract_image_path` returns the exact image name string from the row."""
 
-    result = IngredientRecipeDataset._extract_image_path({"Image_Name": "some-image.png"})
+    result = IngredientRecipeDataset._extract_image_path(
+        {"Image_Name": "some-image.png"}
+    )
     assert result == "some-image.png"
 
 
 def test_extract_ingredients_normalizes_iterables() -> None:
     """Ensure `_extract_ingredients` trims strings and discards empties from iterable input."""
 
-    result = IngredientRecipeDataset._extract_ingredients({"Cleaned_Ingredients": [" flour ", ""]})
+    result = IngredientRecipeDataset._extract_ingredients(
+        {"Cleaned_Ingredients": [" flour ", ""]}
+    )
     assert result == ["flour"]
 
 
 def test_extract_recipe_text_joins_steps() -> None:
     """Ensure `_extract_recipe_text` joins multiple instructions with newlines."""
 
-    result = IngredientRecipeDataset._extract_recipe_text({"Instructions": ["Step 1 ", " Step 2"]})
+    result = IngredientRecipeDataset._extract_recipe_text(
+        {"Instructions": ["Step 1 ", " Step 2"]}
+    )
     assert result == "Step 1\nStep 2"
 
 

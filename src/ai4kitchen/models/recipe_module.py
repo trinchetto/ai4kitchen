@@ -1,16 +1,22 @@
 """LightningModule skeleton for fine-tuning CLIP to recipe generation."""
+
 from __future__ import annotations
 
 import importlib.util
 from typing import Any, Dict, Iterable
 
-if importlib.util.find_spec("pytorch_lightning") is not None:  # pragma: no cover - runtime dependency
+if (
+    importlib.util.find_spec("pytorch_lightning") is not None
+):  # pragma: no cover - runtime dependency
     import pytorch_lightning as pl
 else:  # pragma: no cover - fallback for environments without the dependency
+
     class _LightningModule:
         """Minimal LightningModule stand-in used for documentation and tests."""
 
-        def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: D401 - simple stub
+        def __init__(
+            self, *args: Any, **kwargs: Any
+        ) -> None:  # noqa: D401 - simple stub
             pass
 
         def parameters(self) -> Iterable[Any]:
@@ -22,10 +28,14 @@ else:  # pragma: no cover - fallback for environments without the dependency
     class pl:  # type: ignore[override]
         LightningModule = _LightningModule
 
-if importlib.util.find_spec("torch") is not None:  # pragma: no cover - runtime dependency
+
+if (
+    importlib.util.find_spec("torch") is not None
+):  # pragma: no cover - runtime dependency
     import torch
     from torch import nn
 else:  # pragma: no cover - fallback for environments without the dependency
+
     class _Tensor(dict):
         pass
 
@@ -55,7 +65,9 @@ else:  # pragma: no cover - fallback for environments without the dependency
 class ClipRecipeModule(pl.LightningModule):
     """High-level LightningModule orchestrating CLIP-based recipe generation."""
 
-    def __init__(self, encoder: nn.Module | None = None, decoder: nn.Module | None = None) -> None:
+    def __init__(
+        self, encoder: nn.Module | None = None, decoder: nn.Module | None = None
+    ) -> None:
         super().__init__()
         self.encoder = encoder or nn.Identity()
         self.decoder = decoder or nn.Identity()
@@ -68,7 +80,9 @@ class ClipRecipeModule(pl.LightningModule):
         recipe_logits = self.decoder(image_features)
         return {"logits": recipe_logits}
 
-    def training_step(self, batch: Dict[str, Any], batch_idx: int) -> Any:  # pragma: no cover - placeholder
+    def training_step(
+        self, batch: Dict[str, Any], batch_idx: int
+    ) -> Any:  # pragma: no cover - placeholder
         """Compute training loss for a batch."""
 
         outputs = self.forward(batch)
