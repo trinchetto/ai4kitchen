@@ -18,8 +18,15 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "black",
+    "pre-commit",
+    "mypy",
 ]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
