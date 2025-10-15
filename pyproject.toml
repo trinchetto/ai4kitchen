@@ -10,6 +10,7 @@ authors = [{name = "ai4kitchen Team"}]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "datasets",
     "torch",
     "pytorch-lightning",
 ]
