@@ -8,5 +8,7 @@ model:
   decoder: transformer
   learning_rate: 1.0e-4
 data:
-  train_manifest: data/train_manifest.jsonl
-  val_manifest: data/val_manifest.jsonl
+  dataset_name: kaggle_food_recipes
+  train_split: train[:90%]
+  val_split: train[-10%:]
+  cache_dir: null
