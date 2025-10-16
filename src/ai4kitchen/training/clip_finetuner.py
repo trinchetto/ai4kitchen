@@ -1,8 +1,12 @@
 """LightningModule for fine-tuning CLIP on recipe generation tasks."""
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> fd4b54d (Refactor CLIP recipe module and add fine-tuner)
+=======
+
+>>>>>>> 87e6a18 (fixed bugs in mini training and black formatting)
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -60,12 +64,18 @@ class ClipRecipeFineTuner(pl.LightningModule):
 
         if not hasattr(outputs, "image_embeds") or not hasattr(outputs, "text_embeds"):
 <<<<<<< HEAD
+<<<<<<< HEAD
             raise AttributeError(
                 "CLIP forward output missing image or text embeddings."
             )
 =======
             raise AttributeError("CLIP forward output missing image or text embeddings.")
 >>>>>>> fd4b54d (Refactor CLIP recipe module and add fine-tuner)
+=======
+            raise AttributeError(
+                "CLIP forward output missing image or text embeddings."
+            )
+>>>>>>> 87e6a18 (fixed bugs in mini training and black formatting)
 
         image_embeds = outputs.image_embeds
         text_embeds = outputs.text_embeds
@@ -83,9 +93,12 @@ class ClipRecipeFineTuner(pl.LightningModule):
         if logit_scale_param is not None and hasattr(logit_scale_param, "detach"):
             logit_scale = logit_scale_param.detach().exp()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             logit_scale = logit_scale.to(device=device, dtype=dtype)
 >>>>>>> fd4b54d (Refactor CLIP recipe module and add fine-tuner)
+=======
+>>>>>>> 87e6a18 (fixed bugs in mini training and black formatting)
         else:
             logit_scale = torch.ones(1, device=device, dtype=dtype)
 
@@ -100,6 +113,9 @@ class ClipRecipeFineTuner(pl.LightningModule):
         loss = 0.5 * (loss_img + loss_txt)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 87e6a18 (fixed bugs in mini training and black formatting)
         if getattr(self, "trainer", None) is not None:
             self.log(
                 "train_loss",
@@ -109,14 +125,18 @@ class ClipRecipeFineTuner(pl.LightningModule):
                 prog_bar=True,
                 logger=False,
             )
+<<<<<<< HEAD
 =======
         self.log("train_loss", loss)
 >>>>>>> fd4b54d (Refactor CLIP recipe module and add fine-tuner)
+=======
+>>>>>>> 87e6a18 (fixed bugs in mini training and black formatting)
         return loss
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """Configure optimizer to update only the fusion head."""
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         optimizer = torch.optim.Adam(
             self.fusion_head.parameters(), lr=self.learning_rate
@@ -124,4 +144,9 @@ class ClipRecipeFineTuner(pl.LightningModule):
 =======
         optimizer = torch.optim.Adam(self.fusion_head.parameters(), lr=self.learning_rate)
 >>>>>>> fd4b54d (Refactor CLIP recipe module and add fine-tuner)
+=======
+        optimizer = torch.optim.Adam(
+            self.fusion_head.parameters(), lr=self.learning_rate
+        )
+>>>>>>> 87e6a18 (fixed bugs in mini training and black formatting)
         return {"optimizer": optimizer}
