@@ -1,4 +1,5 @@
 """CLIP model utilities for ai4kitchen."""
+
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Tuple
@@ -18,7 +19,9 @@ class ClipRecipeModule(nn.Module):
         self.model_name_or_path = model_name_or_path
         self.model, self.processor = self._initialize_clip(model_name_or_path)
 
-    def _initialize_clip(self, model_name_or_path: str | None) -> Tuple[CLIPModel, Optional[CLIPProcessor]]:
+    def _initialize_clip(
+        self, model_name_or_path: str | None
+    ) -> Tuple[CLIPModel, Optional[CLIPProcessor]]:
         processor: CLIPProcessor | None = None
 
         if model_name_or_path is None:
@@ -57,14 +60,20 @@ class ClipRecipeModule(nn.Module):
 
         if hasattr(self.model, "get_image_features"):
             return self.model.get_image_features(pixel_values=pixel_values)
-        raise AttributeError("Underlying CLIP model does not provide image feature extraction.")
+        raise AttributeError(
+            "Underlying CLIP model does not provide image feature extraction."
+        )
 
     def encode_text(self, input_ids: Any, attention_mask: Any | None = None) -> Any:
         """Encode text features using the CLIP text tower."""
 
         if hasattr(self.model, "get_text_features"):
-            return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
-        raise AttributeError("Underlying CLIP model does not provide text feature extraction.")
+            return self.model.get_text_features(
+                input_ids=input_ids, attention_mask=attention_mask
+            )
+        raise AttributeError(
+            "Underlying CLIP model does not provide text feature extraction."
+        )
 
     @property
     def projection_dim(self) -> int:
@@ -76,7 +85,9 @@ class ClipRecipeModule(nn.Module):
         if hasattr(self.model, "text_projection"):
             return int(self.model.text_projection.shape[-1])
 
-        raise AttributeError("Unable to determine CLIP projection dimension from the loaded model.")
+        raise AttributeError(
+            "Unable to determine CLIP projection dimension from the loaded model."
+        )
 
     def freeze(self) -> None:
         """Freeze all CLIP parameters (both towers) to disable gradient updates."""
