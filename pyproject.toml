@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "ai4kitchen"
 version = "0.1.0"
 description = "Recipe generation from images using CLIP and PyTorch Lightning"
-authors = [{name = "ai4kitchen Team"}]
+authors = [{name = "Marco Trincavelli"}]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

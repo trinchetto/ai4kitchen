@@ -14,9 +14,9 @@ recipes by combining vision and language models.
 Install dependencies and run the lightweight test suite:
 
 ```bash
-python -m pip install -e .[dev]
-pytest
+source scripts/setup.sh 
 ```
+to keep the environment active in your shell when it finishes.
 
 ## Project Goals
 

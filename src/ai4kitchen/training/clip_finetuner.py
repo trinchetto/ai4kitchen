@@ -1,4 +1,5 @@
 """LightningModule for fine-tuning CLIP on recipe generation tasks."""
+
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -55,7 +56,9 @@ class ClipRecipeFineTuner(pl.LightningModule):
             outputs = self.forward(batch)
 
         if not hasattr(outputs, "image_embeds") or not hasattr(outputs, "text_embeds"):
-            raise AttributeError("CLIP forward output missing image or text embeddings.")
+            raise AttributeError(
+                "CLIP forward output missing image or text embeddings."
+            )
 
         image_embeds = outputs.image_embeds
         text_embeds = outputs.text_embeds
@@ -72,7 +75,6 @@ class ClipRecipeFineTuner(pl.LightningModule):
         logit_scale_param = getattr(self.clip.model, "logit_scale", None)
         if logit_scale_param is not None and hasattr(logit_scale_param, "detach"):
             logit_scale = logit_scale_param.detach().exp()
-            logit_scale = logit_scale.to(device=device, dtype=dtype)
         else:
             logit_scale = torch.ones(1, device=device, dtype=dtype)
 
@@ -86,11 +88,21 @@ class ClipRecipeFineTuner(pl.LightningModule):
         loss_txt = F.cross_entropy(logits_per_text, targets)
         loss = 0.5 * (loss_img + loss_txt)
 
-        self.log("train_loss", loss)
+        if getattr(self, "trainer", None) is not None:
+            self.log(
+                "train_loss",
+                loss,
+                on_step=False,
+                on_epoch=True,
+                prog_bar=True,
+                logger=False,
+            )
         return loss
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """Configure optimizer to update only the fusion head."""
 
-        optimizer = torch.optim.Adam(self.fusion_head.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(
+            self.fusion_head.parameters(), lr=self.learning_rate
+        )
         return {"optimizer": optimizer}

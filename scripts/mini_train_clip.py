@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from typing import Dict, List, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
+import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader, Dataset
 
@@ -69,49 +70,23 @@ class SyntheticClipBatchDataset(Dataset[Dict[str, torch.Tensor]]):
         }
 
 
-def move_batch_to_device(
-    batch: Dict[str, torch.Tensor], device: torch.device
-) -> Dict[str, torch.Tensor]:
-    """Move all tensor values in the batch onto the requested device."""
+class TrainLossTracker(pl.Callback):
+    """Lightning callback that records training loss after each epoch."""
 
-    return {
-        key: value.to(device)
-        if isinstance(value, torch.Tensor)
-        else value
-        for key, value in batch.items()
-    }
+    def __init__(self) -> None:
+        super().__init__()
+        self.epoch_losses: List[float] = []
 
-
-def run_training_loop(
-    epochs: int,
-    dataloader: DataLoader[Dict[str, torch.Tensor]],
-    model: ClipRecipeFineTuner,
-    learning_rate: float,
-    device: torch.device,
-) -> TrainingSummary:
-    """Execute a simple optimization loop and collect per-epoch losses."""
-
-    optimizer = torch.optim.Adam(model.fusion_head.parameters(), lr=learning_rate)
-    epoch_losses: List[float] = []
-
-    model.train()
-    for epoch in range(epochs):
-        losses: List[float] = []
-        for batch in dataloader:
-            optimizer.zero_grad(set_to_none=True)
-            batch_on_device = move_batch_to_device(batch, device)
-            loss = model.training_step(batch_on_device, 0)
-            if not isinstance(loss, torch.Tensor):
-                raise TypeError("training_step did not return a torch.Tensor loss.")
-            loss.backward()
-            optimizer.step()
-            losses.append(float(loss.detach().cpu().item()))
-
-        mean_loss = sum(losses) / max(len(losses), 1)
-        epoch_losses.append(mean_loss)
-        print(f"Epoch {epoch + 1}/{epochs}: mean loss = {mean_loss:.6f}")
-
-    return TrainingSummary(epoch_losses=epoch_losses)
+    def on_train_epoch_end(  # type: ignore[override]
+        self,
+        trainer: "pl.Trainer",
+        pl_module: "pl.LightningModule",
+    ) -> None:
+        for key in ("train_loss_epoch", "train_loss", "loss"):
+            loss = trainer.callback_metrics.get(key)
+            if loss is not None:
+                self.epoch_losses.append(float(loss.detach().cpu().item()))
+                break
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -123,7 +98,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             "and verify the loss decreases."
         )
     )
-    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to run.")
+    parser.add_argument(
+        "--epochs", type=int, default=3, help="Number of epochs to run."
+    )
     parser.add_argument(
         "--dataset-size",
         type=int,
@@ -149,10 +126,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Random seed applied before data/model initialization.",
     )
     parser.add_argument(
-        "--device",
+        "--accelerator",
         type=str,
-        default="cpu",
-        help="Torch device identifier (default: cpu).",
+        default="auto",
+        help="PyTorch Lightning accelerator setting (e.g., cpu, gpu, auto).",
+    )
+    parser.add_argument(
+        "--devices",
+        type=int,
+        default=None,
+        help="Optional number of devices to use (defaults to Lightning's auto selection).",
     )
     return parser.parse_args(argv)
 
@@ -161,22 +144,36 @@ def main(argv: Sequence[str] | None = None) -> None:
     """Entry point that orchestrates the training smoke test."""
 
     args = parse_args(argv)
-    torch.manual_seed(args.seed)
+    pl.seed_everything(args.seed, workers=True)
 
-    device = torch.device(args.device)
     dataset = SyntheticClipBatchDataset(size=args.dataset_size, seed=args.seed)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
     clip_model = ClipRecipeModule(model_name_or_path=None)
     model = ClipRecipeFineTuner(clip_model=clip_model, learning_rate=args.learning_rate)
-    model.to(device)
 
-    summary = run_training_loop(
-        epochs=args.epochs,
-        dataloader=dataloader,
-        model=model,
-        learning_rate=args.learning_rate,
-        device=device,
+    loss_tracker = TrainLossTracker()
+
+    trainer_kwargs: Dict[str, Any] = {
+        "max_epochs": args.epochs,
+        "accelerator": args.accelerator,
+        "logger": False,
+        "enable_checkpointing": False,
+        "enable_model_summary": False,
+        "enable_progress_bar": False,
+        "deterministic": True,
+    }
+    if args.devices is not None:
+        trainer_kwargs["devices"] = args.devices
+
+    trainer = pl.Trainer(callbacks=[loss_tracker], **trainer_kwargs)
+    trainer.fit(model, train_dataloaders=dataloader)
+
+    if not loss_tracker.epoch_losses:
+        raise SystemExit("Training did not produce any loss values.")
+
+    summary = TrainingSummary(
+        epoch_losses=loss_tracker.epoch_losses,
     )
 
     print(
