@@ -13,6 +13,7 @@ dependencies = [
     "datasets",
     "torch",
     "pytorch-lightning",
+    "transformers",
 ]
 
 [project.optional-dependencies]
@@ -21,6 +22,8 @@ dev = [
     "black",
     "pre-commit",
     "mypy",
+    "typeguard",
+    "lark",
 ]
 
 [tool.pytest.ini_options]

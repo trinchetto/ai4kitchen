@@ -30,3 +30,5 @@ jobs:
         run: mypy src
       - name: Run tests
         run: pytest
+      - name: Run CLIP mini-training smoke test
+        run: bash scripts/run_mini_training.sh --epochs 3 --dataset-size 8 --batch-size 4
