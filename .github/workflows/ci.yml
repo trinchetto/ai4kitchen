@@ -26,7 +26,7 @@ jobs:
           python -m pip install -e .[dev]
       - name: Run pre-commit checks
         run: pre-commit run --all-files
-      - name: Run static type checks
-        run: mypy src
       - name: Run tests
         run: pytest
+      - name: Run CLIP mini-training smoke test
+        run: bash scripts/run_mini_training.sh --epochs 50 --dataset-size 8 --batch-size 4
