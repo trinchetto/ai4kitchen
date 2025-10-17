@@ -99,7 +99,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "--epochs", type=int, default=3, help="Number of epochs to run."
+        "--epochs", type=int, default=50, help="Number of epochs to run."
     )
     parser.add_argument(
         "--dataset-size",
