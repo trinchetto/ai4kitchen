@@ -4,37 +4,146 @@ from typing import Iterable, List
 
 UNITS = {
     # core volume/weight
-    "teaspoon","teaspoons","tsp","tsp.","tablespoon","tablespoons","tbsp","tbsp.",
-    "cup","cups","ounce","ounces","oz","pound","pounds","lb","lbs",
-    "gram","grams","g","kilogram","kilograms","kg","milliliter","milliliters","ml",
-    "liter","liters","l","quart","quarts","qt","pint","pints",
+    "teaspoon",
+    "teaspoons",
+    "tsp",
+    "tsp.",
+    "tablespoon",
+    "tablespoons",
+    "tbsp",
+    "tbsp.",
+    "cup",
+    "cups",
+    "ounce",
+    "ounces",
+    "oz",
+    "pound",
+    "pounds",
+    "lb",
+    "lbs",
+    "gram",
+    "grams",
+    "g",
+    "kilogram",
+    "kilograms",
+    "kg",
+    "milliliter",
+    "milliliters",
+    "ml",
+    "liter",
+    "liters",
+    "l",
+    "quart",
+    "quarts",
+    "qt",
+    "pint",
+    "pints",
     # frequent "container-ish" tokens in this dataset
-    "can","cans","package","packages","jar","jars","stick","sticks"
+    "can",
+    "cans",
+    "package",
+    "packages",
+    "jar",
+    "jars",
+    "stick",
+    "sticks",
 }
 
 PREP_WORDS = {
     # very frequent modifiers
-    "chopped","minced","grated","fresh","freshly","large","small","ground","peeled",
-    "thinly","finely","coarsely","sliced","diced","halved","seeded","pitted",
-    "optional","plus","more","divided","about","roughly","to","taste","hot","cold",
-    "storebought","homemade","softened","melted","shredded","cubed",
-    "drained","rinsed","packed","lightly","beaten","juiced"
+    "chopped",
+    "minced",
+    "grated",
+    "fresh",
+    "freshly",
+    "large",
+    "small",
+    "ground",
+    "peeled",
+    "thinly",
+    "finely",
+    "coarsely",
+    "sliced",
+    "diced",
+    "halved",
+    "seeded",
+    "pitted",
+    "optional",
+    "plus",
+    "more",
+    "divided",
+    "about",
+    "roughly",
+    "to",
+    "taste",
+    "hot",
+    "cold",
+    "storebought",
+    "homemade",
+    "softened",
+    "melted",
+    "shredded",
+    "cubed",
+    "drained",
+    "rinsed",
+    "packed",
+    "lightly",
+    "beaten",
+    "juiced"
     # common noise from instructions slipping into ingredients
-    "cut","into","pieces","inch","inches","thick","room","temperature","rinsed","drained"
+    "cut",
+    "into",
+    "pieces",
+    "inch",
+    "inches",
+    "thick",
+    "room",
+    "temperature",
+    "rinsed",
+    "drained"
     # extra common ones (comment out if you want it ultra-minimal)
-    ,"and","or","of","a","the","for","with","in","on","at","by"  
+    ,
+    "and",
+    "or",
+    "of",
+    "a",
+    "the",
+    "for",
+    "with",
+    "in",
+    "on",
+    "at",
+    "by",
 }
 
 # keep a short list of *useful* multi-word ingredients that appear a lot
 MULTIWORD_INGS = {
-    "olive oil","vegetable oil","sesame oil","coconut milk",
-    "kosher salt","black pepper","brown sugar",
-    "baking soda","baking powder",
-    "soy sauce","fish sauce","hot sauce",
-    "lemon juice","lime juice","white wine","red wine",
-    "apple cider","cider vinegar","apple cider vinegar",
-    "heavy cream","sour cream","cream cheese",
-    "chicken broth","chicken stock","beef broth","vegetable broth"
+    "olive oil",
+    "vegetable oil",
+    "sesame oil",
+    "coconut milk",
+    "kosher salt",
+    "black pepper",
+    "brown sugar",
+    "baking soda",
+    "baking powder",
+    "soy sauce",
+    "fish sauce",
+    "hot sauce",
+    "lemon juice",
+    "lime juice",
+    "white wine",
+    "red wine",
+    "apple cider",
+    "cider vinegar",
+    "apple cider vinegar",
+    "heavy cream",
+    "sour cream",
+    "cream cheese",
+    "chicken broth",
+    "chicken stock",
+    "beef broth",
+    "vegetable broth",
 }
 
 # US ↔ UK synonym mapping (expand minimally)
@@ -51,11 +160,16 @@ SYNONYMS = {
 
 # ---------- helpers ----------
 
+
 class IngredientNormalizer:
 
     @staticmethod
     def _strip_accents(text: str) -> str:
-        return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
+        return "".join(
+            c
+            for c in unicodedata.normalize("NFKD", text)
+            if not unicodedata.combining(c)
+        )
 
     @staticmethod
     def _join_multiwords(text: str, multiwords: Iterable[str]) -> str:
@@ -65,13 +179,15 @@ class IngredientNormalizer:
             pattern = r"\b" + re.escape(mw) + r"\b"
             text = re.sub(pattern, mw.replace(" ", "_"), text)
         return text
-    
+
     @staticmethod
     def _remove_quantities(text: str) -> str:
         """Remove numeric quantities (including mixed fractions like 1-1/2)."""
-        _FRACTION_RE = re.compile(r"\b\d+([/-]\d+)?\b|\b\d+\.\d+\b")  # 1, 1/2, 1-1/2, 1.5, etc.
+        _FRACTION_RE = re.compile(
+            r"\b\d+([/-]\d+)?\b|\b\d+\.\d+\b"
+        )  # 1, 1/2, 1-1/2, 1.5, etc.
         return _FRACTION_RE.sub(" ", text)
-    
+
     @staticmethod
     def _remove_parentheticals_and_punctuation(text: str) -> str:
         """Substitutes parentheses and punctuation with spaces."""
@@ -89,13 +205,15 @@ class IngredientNormalizer:
 
     @staticmethod
     def _tokenize(text: str) -> List[str]:
-        _WORD_RE = re.compile(r"[a-z]+(?:'[a-z]+)?")  # simple word matcher (after lowercase+accent-strip)
+        _WORD_RE = re.compile(
+            r"[a-z]+(?:'[a-z]+)?"
+        )  # simple word matcher (after lowercase+accent-strip)
         return _WORD_RE.findall(text)
-    
+
     @staticmethod
     def _drop_clutter(text: str) -> List[str]:
         toks = IngredientNormalizer._tokenize(text)
-        #Remove units and prep words from the text.
+        # Remove units and prep words from the text.
         toks = [t for t in toks if t not in UNITS and t not in PREP_WORDS]
         # collapse duplicate underscores if any, and discard pure underscores
         toks = [re.sub(r"_+", "_", t).strip("_") for t in toks]
@@ -128,7 +246,6 @@ class IngredientNormalizer:
 
         return toks
 
-    
     def normalize_ingredient_list(ings: Iterable[str]) -> List[str]:
         """
         Normalize a list of ingredient strings and return a flat list of normalized items.
@@ -143,6 +260,7 @@ class IngredientNormalizer:
                     out.append(tok)
         return out
 
+
 # ---------- example usage on your dataframe ----------
 
 if __name__ == "__main__":
@@ -150,7 +268,9 @@ if __name__ == "__main__":
     import pandas as pd
     from ai4kitchen.data.ingredients_normalization import IngredientNormalizer
 
-    df = pd.read_csv("~/food-ingredients-and-recipe-dataset-with-images/Food Ingredients and Recipe Dataset with Image Name Mapping.csv")
+    df = pd.read_csv(
+        "~/food-ingredients-and-recipe-dataset-with-images/Food Ingredients and Recipe Dataset with Image Name Mapping.csv"
+    )
 
     def parse_list(s):
         try:
@@ -166,4 +286,4 @@ if __name__ == "__main__":
     df["normalized_ingredients"] = normalized
 
     # peek
-    print(df[["Title","normalized_ingredients"]].head(5).to_string(index=False))
+    print(df[["Title", "normalized_ingredients"]].head(5).to_string(index=False))

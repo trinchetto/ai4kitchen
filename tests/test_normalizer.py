@@ -6,10 +6,17 @@ import importlib.util
 from pathlib import Path
 
 # Dynamically import the IngredientNormalizer class from the ingredients_normalization module
-MODULE_PATH = Path(__file__).resolve().parents[1] / "src" / "ai4kitchen" / "data" / "ingredients_normalization.py"
+MODULE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "src"
+    / "ai4kitchen"
+    / "data"
+    / "ingredients_normalization.py"
+)
 spec = importlib.util.spec_from_file_location("ingredients_normalization", MODULE_PATH)
+if spec is None or spec.loader is None:
+    raise RuntimeError(f"Failed to load module spec for {MODULE_PATH}")
 ingredients_normalization = importlib.util.module_from_spec(spec)
-assert spec.loader is not None  # narrow type checking; loader is required to execute module
 spec.loader.exec_module(ingredients_normalization)
 IngredientNormalizer = ingredients_normalization.IngredientNormalizer
 
